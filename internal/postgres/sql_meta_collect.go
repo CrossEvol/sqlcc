@@ -3,45 +3,29 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"github.com/crossevol/sqlcc/internal/common"
 	"strings"
 
 	_ "github.com/jackc/pgx/v5/stdlib" // Import the Postgres driver
-)
-
-var (
-	dbDriver   string
-	dbDsn      string
-	dbName     string
-	logEnabled bool
 )
 
 func init() {
 
 }
 
-type ColumnPair struct {
-	ColumnName string
-	ColumnType string
-}
-
-type TableMeta struct {
-	TableName string
-	Columns   []ColumnPair
-}
-
 func dbConn(_dbDriver string, _dbDsn string, _dbName string, _logEnabled bool) {
-	dbDriver = _dbDriver
-	dbDsn = _dbDsn
-	dbName = _dbName
-	logEnabled = _logEnabled
+	common.DbDriver = _dbDriver
+	common.DbDsn = _dbDsn
+	common.DbName = _dbName
+	common.LogEnabled = _logEnabled
 }
 
-func getTableMetas(selectedTables ...string) []TableMeta {
+func getTableMetas(selectedTables ...string) []common.TableMeta {
 	var targetTables []string
 	for _, selectedTable := range selectedTables {
 		targetTables = append(targetTables, fmt.Sprintf("'%s'", selectedTable))
 	}
-	db, err := sql.Open(dbDriver, dbDsn)
+	db, err := sql.Open(common.DbDriver, common.DbDsn)
 	if err != nil {
 		panic(err)
 	}
@@ -72,18 +56,18 @@ func getTableMetas(selectedTables ...string) []TableMeta {
 	}
 
 	// Loop through each table and get its columns
-	var tableMetas []TableMeta
+	var tableMetas []common.TableMeta
 	for _, table := range tableNames {
-		if logEnabled {
+		if common.LogEnabled {
 			fmt.Printf("Table: %s\n", table)
 		}
 		columns, err := getColumns(db, table)
-		tableMetas = append(tableMetas, TableMeta{TableName: table, Columns: columns})
+		tableMetas = append(tableMetas, common.TableMeta{TableName: table, Columns: columns})
 		if err != nil {
 			fmt.Println("Error getting columns:", err)
 			continue
 		}
-		if logEnabled {
+		if common.LogEnabled {
 			for _, column := range columns {
 				fmt.Printf("  - Column Name: %s , Column Type: %s\n", column.ColumnName, column.ColumnType)
 			}
@@ -93,7 +77,7 @@ func getTableMetas(selectedTables ...string) []TableMeta {
 	return tableMetas
 }
 
-func getColumns(db *sql.DB, tableName string) ([]ColumnPair, error) {
+func getColumns(db *sql.DB, tableName string) ([]common.ColumnPair, error) {
 	// Use information_schema to get column information
 	rows, err := db.Query(fmt.Sprintf(`SELECT DISTINCT "column_name",data_type FROM information_schema.COLUMNS WHERE table_schema = 'public' AND "table_name" = '%s'`, tableName))
 	if err != nil {
@@ -101,10 +85,10 @@ func getColumns(db *sql.DB, tableName string) ([]ColumnPair, error) {
 	}
 	defer rows.Close()
 
-	var columns []ColumnPair
+	var columns []common.ColumnPair
 	for rows.Next() {
 		//var colName string
-		var columnPair ColumnPair
+		var columnPair common.ColumnPair
 		if err := rows.Scan(&columnPair.ColumnName, &columnPair.ColumnType); err != nil {
 			return nil, err
 		}

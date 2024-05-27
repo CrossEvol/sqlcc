@@ -2,13 +2,13 @@ package sql_builder
 
 import (
 	"fmt"
-	"github.com/crossevol/sqlcc/internal/mysql"
+	"github.com/crossevol/sqlcc/internal/common"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestGenMapperCode(t *testing.T) {
-	tableMeta := mysql.TableMeta{TableName: "Todo", Columns: []mysql.ColumnPair{
+	tableMeta := common.TableMeta{TableName: "Todo", Columns: []common.ColumnPair{
 		{ColumnName: "id"},
 		{ColumnName: "title"},
 		{ColumnName: "created_at"},

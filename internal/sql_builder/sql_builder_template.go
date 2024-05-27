@@ -2,7 +2,7 @@ package sql_builder
 
 import (
 	"fmt"
-	"github.com/crossevol/sqlcc/internal/mysql"
+	"github.com/crossevol/sqlcc/internal/common"
 	"github.com/iancoleman/strcase"
 	"github.com/jinzhu/inflection"
 	"strings"
@@ -66,7 +66,7 @@ func LastFunc(index, length int) bool {
 	return index == length-1
 }
 
-func GenMapperCode(tableMeta mysql.TableMeta) ([]byte, error) {
+func GenMapperCode(tableMeta common.TableMeta) ([]byte, error) {
 	tmpl, err := newTmpl()
 	if err != nil {
 		return nil, err

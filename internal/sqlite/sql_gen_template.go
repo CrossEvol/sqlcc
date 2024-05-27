@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"fmt"
+	"github.com/crossevol/sqlcc/internal/common"
 	"github.com/iancoleman/strcase"
 	"github.com/jinzhu/inflection"
 	"strings"
@@ -56,7 +57,7 @@ WHERE id = ?;
 	return tmpl, nil
 }
 
-func ContentTemplateCrudSql(tableMeta TableMeta) ([]byte, error) {
+func ContentTemplateCrudSql(tableMeta common.TableMeta) ([]byte, error) {
 	tmpl, err := SqliteTemplateCrudSql()
 	if err != nil {
 		return nil, err

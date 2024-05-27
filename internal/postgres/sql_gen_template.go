@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"fmt"
+	"github.com/crossevol/sqlcc/internal/common"
 	"github.com/iancoleman/strcase"
 	"github.com/jinzhu/inflection"
 	"strings"
@@ -58,7 +59,7 @@ WHERE id = $1;
 	return tmpl, nil
 }
 
-func ContentTemplateCrudSql(tableMeta TableMeta) ([]byte, error) {
+func ContentTemplateCrudSql(tableMeta common.TableMeta) ([]byte, error) {
 	tmpl, err := PostgresTemplateCrudSql()
 	if err != nil {
 		return nil, err
