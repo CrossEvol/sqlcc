@@ -9,6 +9,7 @@ import (
 	"text/template"
 )
 
+// TODO: need modify or not ? how do ? concat it later ?
 const mapperTemplate = `
 package table_meta
 

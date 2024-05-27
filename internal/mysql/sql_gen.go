@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"fmt"
+	"github.com/crossevol/sqlcc/internal/common"
 	"github.com/crossevol/sqlcc/internal/models"
 	"github.com/crossevol/sqlcc/internal/sql_builder"
 	"github.com/iancoleman/strcase"
@@ -14,6 +15,7 @@ type MysqlGenService struct {
 }
 
 func (genService *MysqlGenService) GenMapper(config models.Config) {
+	tableMetaDir := common.TableMetaDir
 	wd, err := os.Getwd()
 	if err != nil {
 		fmt.Println(err)
@@ -26,10 +28,10 @@ func (genService *MysqlGenService) GenMapper(config models.Config) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		if _, err := os.Stat(filepath.Join(wd, "table_meta")); err != nil {
-			os.Mkdir(filepath.Join(wd, "table_meta"), fs.ModePerm)
+		if _, err := os.Stat(filepath.Join(wd, tableMetaDir)); err != nil {
+			os.Mkdir(filepath.Join(wd, tableMetaDir), fs.ModePerm)
 		}
-		if err := os.WriteFile(filepath.Join(wd, "table_meta", strcase.ToSnake(tableMeta.TableName)+".go"), sql, os.ModePerm); err != nil {
+		if err := os.WriteFile(filepath.Join(wd, tableMetaDir, strcase.ToSnake(tableMeta.TableName)+".go"), sql, os.ModePerm); err != nil {
 			fmt.Println(err)
 		}
 	}
@@ -41,6 +43,7 @@ func NewMysqlGenService() *MysqlGenService {
 }
 
 func (genService *MysqlGenService) Gen(config models.Config) {
+	gen := common.GenSqlDir
 	wd, err := os.Getwd()
 	if err != nil {
 		fmt.Println(err)
@@ -53,10 +56,10 @@ func (genService *MysqlGenService) Gen(config models.Config) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		if _, err := os.Stat(filepath.Join(wd, "gen")); err != nil {
-			os.Mkdir(filepath.Join(wd, "gen"), fs.ModePerm)
+		if _, err := os.Stat(filepath.Join(wd, gen)); err != nil {
+			os.Mkdir(filepath.Join(wd, gen), fs.ModePerm)
 		}
-		if err := os.WriteFile(filepath.Join(wd, "gen", tableMeta.TableName+".sql"), sql, os.ModePerm); err != nil {
+		if err := os.WriteFile(filepath.Join(wd, gen, tableMeta.TableName+".sql"), sql, os.ModePerm); err != nil {
 			fmt.Println(err)
 		}
 	}
