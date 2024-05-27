@@ -1,0 +1,14 @@
+# Choose the dialect among ['postgres', 'mysql', 'sqlite']
+DB_DRIVER = "pgx"
+
+# dsn should be in the form of user:password@tcp(host:port)/db?k=v
+DB_DSN = "postgresql://postgres:pI9TpV5PFw88KfF3UU@localhost:5432/t3-blog"
+
+# target database name you choose 
+DB_NAME = "t3-blog"
+
+# target tables used for stmt generation
+TABLES = ["Account", "Comment", "Post", "Session", "User", "VerificationToken"]
+
+LOG_ENABLED = true
+	

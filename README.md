@@ -1,0 +1,1 @@
+This repo is a helper tool for sqlc.

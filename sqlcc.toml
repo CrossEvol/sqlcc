@@ -1,0 +1,13 @@
+# Choose the dialect among ['postgres', 'mysql', 'sqlite']
+DB_DRIVER = "mysql"
+
+# dsn should be in the form of user:password@tcp(host:port)/db?k=v
+DB_DSN = "rootomf:7LImSxF1HZ5oBS0WnE@tcp(localhost:3306)/grpc_todo?charset=utf8"
+
+# target database name you choose 
+DB_NAME = "grpc_todo"
+
+# target tables used for stmt generation
+TABLES = ["category", "group", "todo", "todo_detail", "todo_tag", "todosongroups"]
+
+	
