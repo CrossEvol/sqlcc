@@ -304,16 +304,45 @@ var genCmd = &cobra.Command{
 			}
 			fmt.Println(string(marshalIndent))
 		}
-		switch strings.ToLower(config.DbDriver) {
-		case "mysql":
-			genService = mysqlgen.NewMysqlGenService()
-		case "pgx":
-			genService = postgresgen.NewPostgresGenService()
-		case "sqlite3":
-			genService = sqlitegen.NewSqliteGenService()
-		}
+		genService = newGenService(config.DbDriver)
 		genService.Gen(config)
 	},
+}
+
+var sqlBuilderMapperCmd = &cobra.Command{
+	Use:   "map",
+	Short: "map the table metadata to an object.",
+	Long:  `when using the sql builder for golang, use this command to map the column name to static constants by organize them into an object using the column names as values, which can improve the type safety.`,
+	Args: func(cmd *cobra.Command, args []string) error {
+		return nil
+	},
+	Run: func(cmd *cobra.Command, args []string) {
+		var config models.Config
+		toml.DecodeFile(tomlFile, &config)
+		if config.LogEnabled {
+			marshalIndent, err := json.MarshalIndent(config, "", "  ")
+			if err != nil {
+				fmt.Println("Failed to marshal config...")
+			}
+			fmt.Println(string(marshalIndent))
+		}
+		genService := newGenService(config.DbDriver)
+		genService.GenMapper(config)
+	},
+}
+
+func newGenService(driver string) service.SqlGenService {
+	var genService service.SqlGenService
+	switch strings.ToLower(driver) {
+	case "mysql":
+		genService = mysqlgen.NewMysqlGenService()
+	case "pgx":
+		genService = postgresgen.NewPostgresGenService()
+	case "sqlite3":
+		genService = sqlitegen.NewSqliteGenService()
+	}
+
+	return genService
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -328,6 +357,7 @@ func Execute() {
 func init() {
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(genCmd)
+	rootCmd.AddCommand(sqlBuilderMapperCmd)
 	configCmd.AddCommand(configInitCmd)
 	configCmd.AddCommand(configValidateCmd)
 	configCmd.AddCommand(configMysqlCmd)

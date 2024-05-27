@@ -11,6 +11,11 @@ import (
 type PostgresGenService struct {
 }
 
+func (genService *PostgresGenService) GenMapper(config models.Config) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewPostgresGenService() *PostgresGenService {
 	return &PostgresGenService{}
 }

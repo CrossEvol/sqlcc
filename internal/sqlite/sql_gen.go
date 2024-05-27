@@ -11,6 +11,11 @@ import (
 type SqliteGenService struct {
 }
 
+func (genService *SqliteGenService) GenMapper(config models.Config) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewSqliteGenService() *SqliteGenService {
 	return &SqliteGenService{}
 }

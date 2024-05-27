@@ -11,6 +11,11 @@ import (
 type MysqlGenService struct {
 }
 
+func (genService *MysqlGenService) GenMapper(config models.Config) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewMysqlGenService() *MysqlGenService {
 	return &MysqlGenService{}
 }
