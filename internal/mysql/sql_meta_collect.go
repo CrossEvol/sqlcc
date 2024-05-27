@@ -80,7 +80,7 @@ func getTableMetas(selectedTables ...string) []common.TableMeta {
 
 func getColumns(db *sql.DB, tableName string) ([]common.ColumnPair, error) {
 	// Use information_schema to get column information
-	rows, err := db.Query("SELECT DISTINCT COLUMN_NAME,COLUMN_TYPE FROM information_schema.COLUMNS WHERE TABLE_NAME = ?", tableName)
+	rows, err := db.Query("SELECT DISTINCT COLUMN_NAME,COLUMN_TYPE FROM information_schema.COLUMNS WHERE TABLE_NAME = ?  AND TABLE_SCHEMA = ? ", tableName, common.DbName)
 	if err != nil {
 		return nil, err
 	}
