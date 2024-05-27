@@ -1,17 +1,17 @@
 
 # Choose the dialect among ['pgx', 'mysql', 'sqlite3']
-DB_DRIVER = "sqlite3"
+DB_DRIVER = "<?>"
 
 # mysql =>  user:password@tcp(host:port)/db?k=v
 # pgx   =>  user:password@host:port/db?k=v
-DB_DSN = "D:\\GOLANG_SAMPLES\\navidrome_0.50.2_windows_amd64\\navidrome.db"
+DB_DSN = "user:password@tcp(host:port)/test_db?charset=utf8"
 
 # target database name you choose , not needed for sqlite and pgx, only for mysql
-DB_NAME = ""
+DB_NAME = "test_db"
 
 # target tables used for stmt generation
-TABLES = []
+TABLES = ["XXXX", "YYYY"]
 
 # Enable logger or not
-LOG_ENABLED = true
+LOG_ENABLED = false
 	
