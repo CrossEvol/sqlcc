@@ -10,6 +10,10 @@ import (
 )
 
 const mapperTemplate = `
+package table_meta
+
+import "fmt"
+
 type {{ .TableName | ToLower }}_ struct {
 	TABLE      string
 	ALIAS      string

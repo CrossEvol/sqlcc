@@ -21,3 +21,4 @@
 go.work
 
 **/gen
+**/table_meta
