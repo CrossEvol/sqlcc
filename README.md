@@ -1,5 +1,8 @@
 This repo is a helper tool for sqlc.
 
+# Todo
+## when generate insert or update stmt, should remove the id column based on generated approarch
+
 # Notes
 
 ## how to get column name from database
