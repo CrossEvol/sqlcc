@@ -46,7 +46,7 @@ to quickly create a Cobra application.`,
 
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "config",
+	Short: "This command can generate the sqlcc.toml and then validate it, or it can generate the sqlc.json for sqlc generation.",
 	Long:  ``,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
@@ -55,7 +55,7 @@ var configCmd = &cobra.Command{
 
 var configInitCmd = &cobra.Command{
 	Use:   "init",
-	Short: "init",
+	Short: "Generate the sqlcc.toml config file.",
 	Args: func(cmd *cobra.Command, args []string) error {
 		return nil
 	},
@@ -87,7 +87,7 @@ LOG_ENABLED = false
 
 var configValidateCmd = &cobra.Command{
 	Use:   "validate",
-	Short: "validate",
+	Short: "Validate the sqlcc.toml , whether it can connect to the database or not.",
 	Long:  ``,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
@@ -127,7 +127,7 @@ var configValidateCmd = &cobra.Command{
 
 var configSqliteCmd = &cobra.Command{
 	Use:   "sqlite",
-	Short: "sqlite",
+	Short: "Generate the sqlc.json for sqlite dialect.",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		const sqlite3SqlcJson = `
@@ -179,7 +179,7 @@ var configSqliteCmd = &cobra.Command{
 
 var configMysqlCmd = &cobra.Command{
 	Use:   "mysql",
-	Short: "mysql",
+	Short: "Generate the sqlc.json for mysql dialect.",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		const mysqlSqlcJson = `
@@ -231,7 +231,7 @@ var configMysqlCmd = &cobra.Command{
 
 var configPgxCmd = &cobra.Command{
 	Use:   "pgx",
-	Short: "pgx",
+	Short: "Generate the sqlc.json for postgres dialect.",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		const pgxSqlcJson = `
@@ -286,9 +286,9 @@ var configPgxCmd = &cobra.Command{
 	},
 }
 
-var genCmd = &cobra.Command{
+var genCrudSqlCmd = &cobra.Command{
 	Use:   "gen",
-	Short: "gen",
+	Short: "Generate the basic curd sql statement for sqlc",
 	Long:  ``,
 	Args: func(cmd *cobra.Command, args []string) error {
 		return nil
@@ -309,7 +309,7 @@ var genCmd = &cobra.Command{
 	},
 }
 
-var sqlBuilderMapperCmd = &cobra.Command{
+var genSqlBuilderMapperCmd = &cobra.Command{
 	Use:   "map",
 	Short: "map the table metadata to an object.",
 	Long:  `when using the sql builder for golang, use this command to map the column name to static constants by organize them into an object using the column names as values, which can improve the type safety.`,
@@ -356,8 +356,8 @@ func Execute() {
 
 func init() {
 	rootCmd.AddCommand(configCmd)
-	rootCmd.AddCommand(genCmd)
-	rootCmd.AddCommand(sqlBuilderMapperCmd)
+	rootCmd.AddCommand(genCrudSqlCmd)
+	rootCmd.AddCommand(genSqlBuilderMapperCmd)
 	configCmd.AddCommand(configInitCmd)
 	configCmd.AddCommand(configValidateCmd)
 	configCmd.AddCommand(configMysqlCmd)
