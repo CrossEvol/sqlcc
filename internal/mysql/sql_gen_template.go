@@ -71,7 +71,7 @@ INSERT INTO {{ .TableName | Quote }} (
 -- name: Update{{  .TableName | ToCamel | Singular }} :exec
 UPDATE {{ .TableName | Quote }}
 SET {{ range $index, $column := .Columns }}
-  {{ $column.ColumnName  | Quote }} = ? {{ if not (last $index (len $.Columns)) }},{{ end }}
+    {{ $column.ColumnName  | Quote }} = CASE WHEN sqlc.arg({{ $column.ColumnName }}) IS NOT NULL THEN sqlc.arg({{ $column.ColumnName }}) ELSE {{ $column.ColumnName  | Quote }} END,   {{ if not (last $index (len $.Columns)) }},{{ end }}
 {{- end }}
 WHERE id = ?;
 
