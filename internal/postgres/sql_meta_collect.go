@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/crossevol/sqlcc/internal/common"
+	"github.com/crossevol/sqlcc/internal/util"
 	"strings"
 
 	_ "github.com/jackc/pgx/v5/stdlib" // Import the Postgres driver
@@ -57,12 +58,16 @@ func getTableMetas(selectedTables ...string) []common.TableMeta {
 
 	// Loop through each table and get its columns
 	var tableMetas []common.TableMeta
-	for _, table := range tableNames {
+	for _, tableName := range tableNames {
 		if common.LogEnabled {
-			fmt.Printf("Table: %s\n", table)
+			fmt.Printf("Table: %s\n", tableName)
 		}
-		columns, err := getColumns(db, table)
-		tableMetas = append(tableMetas, common.TableMeta{TableName: table, Columns: columns})
+		columns, err := getColumns(db, tableName)
+		tableMeta := common.TableMeta{TableName: tableName, Columns: columns}
+
+		util.DeterminePK(&tableMeta)
+
+		tableMetas = append(tableMetas, tableMeta)
 		if err != nil {
 			fmt.Println("Error getting columns:", err)
 			continue
@@ -94,5 +99,41 @@ func getColumns(db *sql.DB, tableName string) ([]common.ColumnPair, error) {
 		}
 		columns = append(columns, columnPair)
 	}
+
+	// TODO: after uncomment here, will miss the columns data , why ?
+	// find primary key for postgres
+	//pkMeta, err := findPkColumn(db, tableName)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//for _, column := range columns {
+	//	if column.ColumnName == pkMeta.ColumnName {
+	//		column.IsAutoIncrement = true
+	//		column.IsPrimaryKey = true
+	//		break
+	//	}
+	//}
 	return columns, nil
+}
+
+func findPkColumn(db *sql.DB, tableName string) (*findPkMeta, error) {
+	var meta findPkMeta
+	rows, err := db.Query(fmt.Sprintf(`SELECT column_name, is_identity, column_default FROM information_schema.columns WHERE table_schema = 'public' AND table_name = %s AND column_default LIKE 'nextval(%'`, tableName))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := rows.Scan(&meta.ColumnName, &meta.IsIdentity, &meta.ColumnDefault); err != nil {
+			return nil, err
+		}
+	}
+	return &meta, err
+}
+
+type findPkMeta struct {
+	ColumnName    string
+	IsIdentity    string
+	ColumnDefault string
 }

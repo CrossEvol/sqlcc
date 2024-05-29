@@ -16,7 +16,14 @@ func IsNotID(columnPair common.ColumnPair) bool {
 func DeterminePK(tableMeta *common.TableMeta) {
 	// determine the primary key
 	// when pk column is not integer, it will appear in the position[0]
+	// or if the columnNames contains "id" , it should be named "id"
 	tableMeta.PkColumnName = tableMeta.Columns[0].ColumnName
+	for _, column := range tableMeta.Columns {
+		if column.ColumnName == "id" {
+			tableMeta.PkColumnName = "id"
+			break
+		}
+	}
 	for _, columnPair := range tableMeta.Columns {
 		if IsID(columnPair) {
 			tableMeta.PkColumnName = columnPair.ColumnName

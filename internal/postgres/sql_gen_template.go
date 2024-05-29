@@ -11,7 +11,7 @@ func PostgresTemplateCrudSql() (*template.Template, error) {
 	const postgresCrudTemplate = `
 -- name: Get{{ .TableName | ToCamel | Singular }} :one
 SELECT * FROM {{ .TableName | Quote }}
-WHERE id = $1 LIMIT 1;
+WHERE {{ .PkColumnName }} = $1 LIMIT 1;
 
 -- name: Get{{ .TableName | ToCamel | Plural }} :many
 SELECT * FROM {{ .TableName | Quote }};
@@ -22,7 +22,7 @@ SELECT count(*) FROM {{ .TableName | Quote }};
 -- name: Create{{  .TableName | ToCamel | Singular }} :one
 INSERT INTO {{ .TableName | Quote }} (
 {{- range $index, $column := .Columns }}
-  {{ $column.ColumnName  | Quote }}{{ if not (Last $index (len $.Columns)) }},{{ end }}
+  {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }}{{ if not (Last $index (len $.Columns)) }},{{ end }}{{ end }}
 {{- end }}
 ) VALUES (
 {{- range $index, $column := .Columns }}
@@ -34,14 +34,14 @@ RETURNING *;
 -- name: Update{{  .TableName | ToCamel | Singular }} :one
 UPDATE {{ .TableName | Quote }}
 SET {{ range $index, $column := .Columns }}
-    {{ $column.ColumnName  | Quote }} = CASE WHEN @{{ $column.ColumnName }} IS NOT NULL THEN @{{ $column.ColumnName }} ELSE {{ $column.ColumnName  | Quote }} END,   {{ if not (Last $index (len $.Columns)) }},{{ end }}
+  {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }} = CASE WHEN @{{ $column.ColumnName }} IS NOT NULL THEN @{{ $column.ColumnName }} ELSE {{ $column.ColumnName  | Quote }} END,   {{ if not (Last $index (len $.Columns)) }},{{ end }}{{ end }}
 {{- end }}
-WHERE id = ${{ Add (len .Columns) 1 }}
+WHERE {{ .PkColumnName }} = ${{ Add (len .Columns) 1 }}
 RETURNING *;
 
 -- name: Delete{{  .TableName | ToCamel | Singular }} :exec
 DELETE FROM {{ .TableName | Quote }}
-WHERE id = $1;
+WHERE {{ .PkColumnName }} = $1;
 `
 
 	tmpl := template.Must(template.New("postgresCrudTemplate").Funcs(util.TemplateFuncMap()).Parse(postgresCrudTemplate))
