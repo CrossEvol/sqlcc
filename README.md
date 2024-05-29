@@ -27,3 +27,37 @@ table_name" = ?;
 PRAGMA table_info('Todo');
 PRAGMA table_info(?);
 ```
+
+## how to verify a column is pk && auto_increment 
+### sqlite
+```sqlite
+PRAGMA table_info(downloaded_image);
+``` 
+
+### mysql
+`auto_increment`
+```mysql
+SELECT COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA = 'answer'
+AND TABLE_NAME = 'activity'
+AND EXTRA = 'auto_increment';
+```
+
+`primary key`
+```mysql
+SELECT COLUMN_NAME
+FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+WHERE TABLE_SCHEMA = 'answer'
+AND TABLE_NAME = 'activity'
+AND CONSTRAINT_NAME = 'PRIMARY';
+```
+
+### postgres
+`auto_increment`
+```postgresql
+SELECT column_name, is_identity, column_default
+FROM information_schema.columns
+WHERE table_schema = 'public'
+AND table_name = 'Post' AND column_default LIKE 'nextval(%';
+```
