@@ -5,6 +5,14 @@ import (
 	"github.com/crossevol/sqlcc/internal/common"
 )
 
+func IsID(columnPair common.ColumnPair) bool {
+	return columnPair.IsAutoIncrement || columnPair.IsPrimaryKey
+}
+
+func IsNotID(columnPair common.ColumnPair) bool {
+	return !columnPair.IsAutoIncrement && !columnPair.IsPrimaryKey
+}
+
 func DeterminePK(tableMeta *common.TableMeta) {
 	// determine the primary key
 	// when pk column is not integer, it will appear in the position[0]

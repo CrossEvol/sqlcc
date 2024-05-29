@@ -3,8 +3,7 @@ package sql_builder
 import (
 	"fmt"
 	"github.com/crossevol/sqlcc/internal/common"
-	"github.com/iancoleman/strcase"
-	"github.com/jinzhu/inflection"
+	"github.com/crossevol/sqlcc/internal/util"
 	"strings"
 	"text/template"
 )
@@ -48,17 +47,7 @@ func NewAlias{{ .TableName | ToCamel }}_(alias string) {{ .TableName | ToLower }
 `
 
 func newTmpl() (*template.Template, error) {
-	tmpl := template.Must(template.New("mapperTemplate").Funcs(template.FuncMap{
-		"ToSnake":          strcase.ToSnake,
-		"ToCamel":          strcase.ToCamel,
-		"ToLower":          strcase.ToLowerCamel,
-		"ToScreamingSnake": strcase.ToScreamingSnake,
-		"Plural":           inflection.Plural,
-		"Singular":         inflection.Singular,
-		"Quote":            Quote,
-		"Add":              func(a, b int) int { return a + b },
-		"Last":             LastFunc,
-	}).Parse(mapperTemplate))
+	tmpl := template.Must(template.New("mapperTemplate").Funcs(util.TemplateFuncMap()).Parse(mapperTemplate))
 
 	return tmpl, nil
 }

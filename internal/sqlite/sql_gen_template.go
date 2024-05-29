@@ -1,11 +1,8 @@
 package sqlite
 
 import (
-	"fmt"
 	"github.com/crossevol/sqlcc/internal/common"
 	"github.com/crossevol/sqlcc/internal/util"
-	"github.com/iancoleman/strcase"
-	"github.com/jinzhu/inflection"
 	"strings"
 	"text/template"
 )
@@ -25,18 +22,18 @@ SELECT count(*) FROM {{ .TableName | Quote }};
 -- name: Create{{  .TableName | ToCamel | Singular }} :execresult
 INSERT INTO {{ .TableName | Quote }} (
 {{- range $index, $column := .Columns }}
-  {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }}{{ if not (last $index (len $.Columns)) }},{{ end }}{{end}}
+  {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }}{{ if not (Last $index (len $.Columns)) }},{{ end }}{{end}}
 {{- end }}
 ) VALUES (
 {{- range $index, $column := .Columns }}
-  ? {{ if not (last $index (len $.Columns)) }},{{ end }}
+  ? {{ if not (Last $index (len $.Columns)) }},{{ end }}
 {{- end }}
 );
 
 -- name: Update{{  .TableName | ToCamel | Singular }} :exec
 UPDATE {{ .TableName | Quote }}
 SET {{ range $index, $column := .Columns }}
-  {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }} = CASE WHEN @{{ $column.ColumnName }} IS NOT NULL THEN @{{ $column.ColumnName }} ELSE {{ $column.ColumnName  | Quote }} END,   {{ if not (last $index (len $.Columns)) }},{{ end }}{{end}}
+  {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }} = CASE WHEN @{{ $column.ColumnName }} IS NOT NULL THEN @{{ $column.ColumnName }} ELSE {{ $column.ColumnName  | Quote }} END,   {{ if not (Last $index (len $.Columns)) }},{{ end }}{{end}}
 {{- end }}
 WHERE {{ .PkColumnName }} = ?;
 
@@ -45,17 +42,7 @@ DELETE FROM {{ .TableName | Quote }}
 WHERE {{ .PkColumnName }} = ?;
 `
 
-	tmpl := template.Must(template.New("postgresCrudTemplate").Funcs(template.FuncMap{
-		"ToSnake":  strcase.ToSnake,
-		"ToCamel":  strcase.ToCamel,
-		"Plural":   inflection.Plural,
-		"Singular": inflection.Singular,
-		"Quote":    Quote,
-		"Add":      func(a, b int) int { return a + b },
-		"last":     LastFunc,
-		"IsID":     util.IsID,
-		"IsNotID":  util.IsNotID,
-	}).Parse(postgresCrudTemplate))
+	tmpl := template.Must(template.New("postgresCrudTemplate").Funcs(util.TemplateFuncMap()).Parse(postgresCrudTemplate))
 
 	return tmpl, nil
 }
@@ -73,12 +60,4 @@ func ContentTemplateCrudSql(tableMeta common.TableMeta) ([]byte, error) {
 	}
 
 	return []byte(content.String()), nil
-}
-
-func Quote(string string) string {
-	return fmt.Sprintf("`%s`", string)
-}
-
-func LastFunc(index, length int) bool {
-	return index == length-1
 }

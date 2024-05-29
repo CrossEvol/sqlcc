@@ -1,10 +1,8 @@
 package mysql
 
 import (
-	"fmt"
 	"github.com/crossevol/sqlcc/internal/common"
-	"github.com/iancoleman/strcase"
-	"github.com/jinzhu/inflection"
+	"github.com/crossevol/sqlcc/internal/util"
 	"strings"
 	"text/template"
 )
@@ -23,11 +21,11 @@ SELECT count(*) FROM {{ .TableName | Quote }};
 -- name: Create{{  .TableName | ToCamel | Singular }} :one
 INSERT INTO {{ .TableName | Quote }} (
 {{- range $index, $column := .Columns }}
-  {{ $column.ColumnName  | Quote }}{{ if not (last $index (len $.Columns)) }},{{ end }}
+  {{ $column.ColumnName  | Quote }}{{ if not (Last $index (len $.Columns)) }},{{ end }}
 {{- end }}
 ) VALUES (
 {{- range $index, $column := .Columns }}
-  ? {{ if not (last $index (len $.Columns)) }},{{ end }}
+  ? {{ if not (Last $index (len $.Columns)) }},{{ end }}
 {{- end }}
 )
 RETURNING *;
@@ -35,7 +33,7 @@ RETURNING *;
 -- name: Update{{  .TableName | ToCamel | Singular }} :one
 UPDATE {{ .TableName | Quote }}
 SET {{ range $index, $column := .Columns }}
-  {{ $column.ColumnName  | Quote }} = ? {{ if not (last $index (len $.Columns)) }},{{ end }}
+  {{ $column.ColumnName  | Quote }} = ? {{ if not (Last $index (len $.Columns)) }},{{ end }}
 {{- end }}
 WHERE id = ?
 RETURNING *;
@@ -60,18 +58,18 @@ SELECT count(*) FROM {{ .TableName | Quote }};
 -- name: Create{{  .TableName | ToCamel | Singular }} :execresult
 INSERT INTO {{ .TableName | Quote }} (
 {{- range $index, $column := .Columns }}
-  {{ $column.ColumnName  | Quote }}{{ if not (last $index (len $.Columns)) }},{{ end }}
+  {{ $column.ColumnName  | Quote }}{{ if not (Last $index (len $.Columns)) }},{{ end }}
 {{- end }}
 ) VALUES (
 {{- range $index, $column := .Columns }}
-  ? {{ if not (last $index (len $.Columns)) }},{{ end }}
+  ? {{ if not (Last $index (len $.Columns)) }},{{ end }}
 {{- end }}
 );
 
 -- name: Update{{  .TableName | ToCamel | Singular }} :exec
 UPDATE {{ .TableName | Quote }}
 SET {{ range $index, $column := .Columns }}
-    {{ $column.ColumnName  | Quote }} = CASE WHEN sqlc.arg({{ $column.ColumnName }}) IS NOT NULL THEN sqlc.arg({{ $column.ColumnName }}) ELSE {{ $column.ColumnName  | Quote }} END,   {{ if not (last $index (len $.Columns)) }},{{ end }}
+    {{ $column.ColumnName  | Quote }} = CASE WHEN sqlc.arg({{ $column.ColumnName }}) IS NOT NULL THEN sqlc.arg({{ $column.ColumnName }}) ELSE {{ $column.ColumnName  | Quote }} END,   {{ if not (Last $index (len $.Columns)) }},{{ end }}
 {{- end }}
 WHERE id = ?;
 
@@ -80,14 +78,7 @@ DELETE FROM {{ .TableName | Quote }}
 WHERE id = ?;
 `
 
-	tmpl := template.Must(template.New("mysqlCrudTemplate").Funcs(template.FuncMap{
-		"ToSnake":  strcase.ToSnake,
-		"ToCamel":  strcase.ToCamel,
-		"Plural":   inflection.Plural,
-		"Singular": inflection.Singular,
-		"Quote":    Quote,
-		"last":     LastFunc,
-	}).Parse(mysqlCrudTemplate))
+	tmpl := template.Must(template.New("mysqlCrudTemplate").Funcs(util.TemplateFuncMap()).Parse(mysqlCrudTemplate))
 
 	return tmpl, nil
 }
@@ -105,12 +96,4 @@ func ContentTemplateCrudSql(tableMeta common.TableMeta) ([]byte, error) {
 	}
 
 	return []byte(content.String()), nil
-}
-
-func Quote(string string) string {
-	return fmt.Sprintf("`%s`", string)
-}
-
-func LastFunc(index, length int) bool {
-	return index == length-1
 }
