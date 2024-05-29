@@ -118,7 +118,7 @@ func getColumns(db *sql.DB, tableName string) ([]common.ColumnPair, error) {
 
 func findPkColumn(db *sql.DB, tableName string) (*findPkMeta, error) {
 	var meta findPkMeta
-	rows, err := db.Query(fmt.Sprintf(`SELECT column_name, is_identity, column_default FROM information_schema.columns WHERE table_schema = 'public' AND table_name = %s AND column_default LIKE 'nextval(%'`, tableName))
+	rows, err := db.Query(fmt.Sprintf(`SELECT column_name, is_identity, column_default FROM information_schema.columns WHERE table_schema = 'public' AND table_name = %s AND column_default LIKE 'nextval(%%'`, tableName))
 	if err != nil {
 		return nil, err
 	}

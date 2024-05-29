@@ -5,11 +5,20 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/crossevol/sqlcc/internal/models"
+	"github.com/joho/godotenv"
+	"log"
+	"os"
+	"strconv"
+	"strings"
 	"testing"
 )
 
 func TestDbConn(t *testing.T) {
-	db, err := sql.Open("pgx", "postgresql://postgres:pI9TpV5PFw88KfF3UU@localhost:5432/t3-blog")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	db, err := sql.Open(os.Getenv("DB_DRIVER"), os.Getenv("DB_DSN"))
 	defer db.Close()
 	if err != nil {
 		fmt.Println("Failed to open the db...")
@@ -24,7 +33,11 @@ func TestDbConn(t *testing.T) {
 }
 
 func TestTablesMetadata(t *testing.T) {
-	db, err := sql.Open("pgx", "postgresql://postgres:pI9TpV5PFw88KfF3UU@localhost:5432/t3-blog")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	db, err := sql.Open(os.Getenv("DB_DRIVER"), os.Getenv("DB_DSN"))
 	defer db.Close()
 	if err != nil {
 		fmt.Println("Failed to open the db...")
@@ -59,13 +72,20 @@ func TestTablesMetadata(t *testing.T) {
 	}
 }
 
-func TestGen(t *testing.T) {
-	config := models.Config{
-		DbDriver: "pgx",
-		DbDsn:    "postgresql://postgres:pI9TpV5PFw88KfF3UU@localhost:5432/t3-blog",
-		DbName:   "t3-blog",
-		Tables:   []string{"Account", "Comment", "Post", "Session", "User", "VerificationToken"},
+func TestPostgresGenService_Gen(t *testing.T) {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
 	}
+	logEnabled, err := strconv.ParseBool(os.Getenv("LOG_ENABLED"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	var tables []string
+	for _, table := range strings.Split(os.Getenv("TABLES"), ",") {
+		tables = append(tables, table)
+	}
+	config := models.Config{DbDriver: os.Getenv("DB_DRIVER"), DbDsn: os.Getenv("DB_DSN"), DbName: os.Getenv("DB_NAME"), Tables: tables, LogEnabled: logEnabled}
 	service := NewPostgresGenService()
 	service.Gen(config)
 }
