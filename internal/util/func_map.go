@@ -11,6 +11,10 @@ func Quote(string string) string {
 	return fmt.Sprintf("`%s`", string)
 }
 
+func Quote2(string string) string {
+	return fmt.Sprintf("'%s'", string)
+}
+
 func LastFunc(index, length int) bool {
 	return index == length-1
 }

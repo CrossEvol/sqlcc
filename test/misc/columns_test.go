@@ -1,4 +1,4 @@
-package array
+package misc
 
 import (
 	"encoding/json"

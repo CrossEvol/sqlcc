@@ -63,7 +63,11 @@ func getTableMetas(selectedTables ...string) []common.TableMeta {
 			fmt.Printf("Table: %s\n", tableName)
 		}
 		columns, err := getColumns(db, tableName)
-		tableMeta := common.TableMeta{TableName: tableName, Columns: columns}
+		var Columns []common.ColumnPair
+		for _, column := range columns {
+			Columns = append(Columns, *column)
+		}
+		tableMeta := common.TableMeta{TableName: tableName, Columns: Columns}
 
 		util.DeterminePK(&tableMeta)
 
@@ -82,7 +86,7 @@ func getTableMetas(selectedTables ...string) []common.TableMeta {
 	return tableMetas
 }
 
-func getColumns(db *sql.DB, tableName string) ([]common.ColumnPair, error) {
+func getColumns(db *sql.DB, tableName string) ([]*common.ColumnPair, error) {
 	// Use information_schema to get column information
 	rows, err := db.Query(fmt.Sprintf(`SELECT DISTINCT "column_name",data_type FROM information_schema.COLUMNS WHERE table_schema = 'public' AND "table_name" = '%s'`, tableName))
 	if err != nil {
@@ -90,35 +94,35 @@ func getColumns(db *sql.DB, tableName string) ([]common.ColumnPair, error) {
 	}
 	defer rows.Close()
 
-	var columns []common.ColumnPair
+	var columns []*common.ColumnPair
 	for rows.Next() {
 		//var colName string
 		var columnPair common.ColumnPair
 		if err := rows.Scan(&columnPair.ColumnName, &columnPair.ColumnType); err != nil {
 			return nil, err
 		}
-		columns = append(columns, columnPair)
+		columns = append(columns, &columnPair)
 	}
 
 	// TODO: after uncomment here, will miss the columns data , why ?
 	// find primary key for postgres
-	//pkMeta, err := findPkColumn(db, tableName)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//for _, column := range columns {
-	//	if column.ColumnName == pkMeta.ColumnName {
-	//		column.IsAutoIncrement = true
-	//		column.IsPrimaryKey = true
-	//		break
-	//	}
-	//}
+	pkMeta, err := findPkColumn(db, tableName)
+	if err != nil {
+		return columns, err
+	}
+	for _, column := range columns {
+		if column.ColumnName == pkMeta.ColumnName {
+			column.IsAutoIncrement = true
+			column.IsPrimaryKey = true
+			break
+		}
+	}
 	return columns, nil
 }
 
 func findPkColumn(db *sql.DB, tableName string) (*findPkMeta, error) {
 	var meta findPkMeta
-	rows, err := db.Query(fmt.Sprintf(`SELECT column_name, is_identity, column_default FROM information_schema.columns WHERE table_schema = 'public' AND table_name = %s AND column_default LIKE 'nextval(%%'`, tableName))
+	rows, err := db.Query(fmt.Sprintf(`SELECT column_name, is_identity, column_default FROM information_schema.columns WHERE table_schema = 'public' AND table_name = %s AND column_default LIKE 'nextval(%%'`, util.Quote2(tableName)))
 	if err != nil {
 		return nil, err
 	}
