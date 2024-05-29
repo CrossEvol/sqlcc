@@ -78,7 +78,7 @@ func getTableMetas(selectedTables ...string) []common.TableMeta {
 	return tableMetas
 }
 
-func getColumns(db *sql.DB, tableName string) ([]common.ColumnPair, error) {
+func getColumns(db *sql.DB, tableName string) ([]*common.ColumnPair, error) {
 	// Use information_schema to get column information
 	rows, err := db.Query("SELECT DISTINCT COLUMN_NAME,COLUMN_TYPE FROM information_schema.COLUMNS WHERE TABLE_NAME = ?  AND TABLE_SCHEMA = ? ", tableName, common.DbName)
 	if err != nil {
@@ -86,14 +86,14 @@ func getColumns(db *sql.DB, tableName string) ([]common.ColumnPair, error) {
 	}
 	defer rows.Close()
 
-	var columns []common.ColumnPair
+	var columns []*common.ColumnPair
 	for rows.Next() {
 		//var colName string
 		var columnPair common.ColumnPair
 		if err := rows.Scan(&columnPair.ColumnName, &columnPair.ColumnType); err != nil {
 			return nil, err
 		}
-		columns = append(columns, columnPair)
+		columns = append(columns, &columnPair)
 	}
 	return columns, nil
 }

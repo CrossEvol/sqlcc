@@ -82,7 +82,7 @@ func getTableMetas(selectedTables ...string) []common.TableMeta {
 	return tableMetas
 }
 
-func getColumns(db *sql.DB, tableName string) ([]common.ColumnPair, error) {
+func getColumns(db *sql.DB, tableName string) ([]*common.ColumnPair, error) {
 	// Use information_schema to get column information
 	rows, err := db.Query(fmt.Sprintf(`PRAGMA table_info('%s');`, tableName))
 	if err != nil {
@@ -90,7 +90,7 @@ func getColumns(db *sql.DB, tableName string) ([]common.ColumnPair, error) {
 	}
 	defer rows.Close()
 
-	var columns []common.ColumnPair
+	var columns []*common.ColumnPair
 	for rows.Next() {
 		var pragma models.Pragma
 		if err := rows.Scan(&pragma.CID, &pragma.Name, &pragma.Type, &pragma.Notnull, &pragma.DfltValue, &pragma.PK); err != nil {
@@ -102,7 +102,7 @@ func getColumns(db *sql.DB, tableName string) ([]common.ColumnPair, error) {
 			columnPair.IsAutoIncrement = true
 			columnPair.IsPrimaryKey = true
 		}
-		columns = append(columns, columnPair)
+		columns = append(columns, &columnPair)
 	}
 	return columns, nil
 }

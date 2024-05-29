@@ -25,7 +25,7 @@ func DeterminePK(tableMeta *common.TableMeta) {
 		}
 	}
 	for _, columnPair := range tableMeta.Columns {
-		if IsID(columnPair) {
+		if IsID(*columnPair) {
 			tableMeta.PkColumnName = columnPair.ColumnName
 			break
 		}

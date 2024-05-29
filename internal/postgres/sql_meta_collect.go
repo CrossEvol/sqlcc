@@ -63,11 +63,7 @@ func getTableMetas(selectedTables ...string) []common.TableMeta {
 			fmt.Printf("Table: %s\n", tableName)
 		}
 		columns, err := getColumns(db, tableName)
-		var Columns []common.ColumnPair
-		for _, column := range columns {
-			Columns = append(Columns, *column)
-		}
-		tableMeta := common.TableMeta{TableName: tableName, Columns: Columns}
+		tableMeta := common.TableMeta{TableName: tableName, Columns: columns}
 
 		util.DeterminePK(&tableMeta)
 

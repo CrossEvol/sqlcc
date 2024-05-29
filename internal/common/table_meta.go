@@ -9,6 +9,6 @@ type ColumnPair struct {
 
 type TableMeta struct {
 	TableName    string
-	Columns      []ColumnPair
+	Columns      []*ColumnPair
 	PkColumnName string
 }
