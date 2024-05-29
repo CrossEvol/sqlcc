@@ -3,6 +3,7 @@ package sqlite
 import (
 	"fmt"
 	"github.com/crossevol/sqlcc/internal/common"
+	"github.com/crossevol/sqlcc/internal/util"
 	"github.com/iancoleman/strcase"
 	"github.com/jinzhu/inflection"
 	"strings"
@@ -13,7 +14,7 @@ func SqliteTemplateCrudSql() (*template.Template, error) {
 	const postgresCrudTemplate = `
 -- name: Get{{ .TableName | ToCamel | Singular }} :one
 SELECT * FROM {{ .TableName | Quote }}
-WHERE id = ? LIMIT 1;
+WHERE {{ .PkColumnName }} = ? LIMIT 1;
 
 -- name: Get{{ .TableName | ToCamel | Plural }} :many
 SELECT * FROM {{ .TableName | Quote }};
@@ -24,7 +25,7 @@ SELECT count(*) FROM {{ .TableName | Quote }};
 -- name: Create{{  .TableName | ToCamel | Singular }} :execresult
 INSERT INTO {{ .TableName | Quote }} (
 {{- range $index, $column := .Columns }}
-  {{ $column.ColumnName  | Quote }}{{ if not (last $index (len $.Columns)) }},{{ end }}
+  {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }}{{ if not (last $index (len $.Columns)) }},{{ end }}{{end}}
 {{- end }}
 ) VALUES (
 {{- range $index, $column := .Columns }}
@@ -35,13 +36,13 @@ INSERT INTO {{ .TableName | Quote }} (
 -- name: Update{{  .TableName | ToCamel | Singular }} :exec
 UPDATE {{ .TableName | Quote }}
 SET {{ range $index, $column := .Columns }}
-  {{ $column.ColumnName  | Quote }} = CASE WHEN @{{ $column.ColumnName }} IS NOT NULL THEN @{{ $column.ColumnName }} ELSE {{ $column.ColumnName  | Quote }} END,   {{ if not (last $index (len $.Columns)) }},{{ end }}
+  {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }} = CASE WHEN @{{ $column.ColumnName }} IS NOT NULL THEN @{{ $column.ColumnName }} ELSE {{ $column.ColumnName  | Quote }} END,   {{ if not (last $index (len $.Columns)) }},{{ end }}{{end}}
 {{- end }}
-WHERE id = ?;
+WHERE {{ .PkColumnName }} = ?;
 
 -- name: Delete{{  .TableName | ToCamel | Singular }} :exec
 DELETE FROM {{ .TableName | Quote }}
-WHERE id = ?;
+WHERE {{ .PkColumnName }} = ?;
 `
 
 	tmpl := template.Must(template.New("postgresCrudTemplate").Funcs(template.FuncMap{
@@ -52,6 +53,8 @@ WHERE id = ?;
 		"Quote":    Quote,
 		"Add":      func(a, b int) int { return a + b },
 		"last":     LastFunc,
+		"IsID":     util.IsID,
+		"IsNotID":  util.IsNotID,
 	}).Parse(postgresCrudTemplate))
 
 	return tmpl, nil

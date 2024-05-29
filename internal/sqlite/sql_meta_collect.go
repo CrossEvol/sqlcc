@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/crossevol/sqlcc/internal/common"
 	"github.com/crossevol/sqlcc/internal/models"
+	"github.com/crossevol/sqlcc/internal/util"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3" // Import the Sqlite driver
@@ -62,7 +63,11 @@ func getTableMetas(selectedTables ...string) []common.TableMeta {
 			fmt.Printf("Table: %s\n", table)
 		}
 		columns, err := getColumns(db, table)
-		tableMetas = append(tableMetas, common.TableMeta{TableName: table, Columns: columns})
+		tableMeta := common.TableMeta{TableName: table, Columns: columns}
+
+		util.DeterminePK(&tableMeta)
+
+		tableMetas = append(tableMetas, tableMeta)
 		if err != nil {
 			fmt.Println("Error getting columns:", err)
 			continue
@@ -92,7 +97,12 @@ func getColumns(db *sql.DB, tableName string) ([]common.ColumnPair, error) {
 			fmt.Println(err)
 		}
 
-		columns = append(columns, common.ColumnPair{ColumnName: pragma.Name, ColumnType: pragma.Type})
+		columnPair := common.ColumnPair{ColumnName: pragma.Name, ColumnType: pragma.Type}
+		if pragma.PK == 1 {
+			columnPair.IsAutoIncrement = true
+			columnPair.IsPrimaryKey = true
+		}
+		columns = append(columns, columnPair)
 	}
 	return columns, nil
 }
