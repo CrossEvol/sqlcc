@@ -7,47 +7,11 @@ import (
 	"text/template"
 )
 
-const postgresCrudTemplate = `
--- name: Get{{ .TableName | ToCamel | Singular }} :one
-SELECT * FROM {{ .TableName | Quote }}
-WHERE id = ? LIMIT 1;
-
--- name: Get{{ .TableName | ToCamel | Plural }} :many
-SELECT * FROM {{ .TableName | Quote }};
-
--- name: Count{{ .TableName | ToCamel | Plural }} :one
-SELECT count(*) FROM {{ .TableName | Quote }};
-
--- name: Create{{  .TableName | ToCamel | Singular }} :one
-INSERT INTO {{ .TableName | Quote }} (
-{{- range $index, $column := .Columns }}
-  {{ $column.ColumnName  | Quote }}{{ if not (Last $index (len $.Columns)) }},{{ end }}
-{{- end }}
-) VALUES (
-{{- range $index, $column := .Columns }}
-  ? {{ if not (Last $index (len $.Columns)) }},{{ end }}
-{{- end }}
-)
-RETURNING *;
-
--- name: Update{{  .TableName | ToCamel | Singular }} :one
-UPDATE {{ .TableName | Quote }}
-SET {{ range $index, $column := .Columns }}
-  {{ $column.ColumnName  | Quote }} = ? {{ if not (Last $index (len $.Columns)) }},{{ end }}
-{{- end }}
-WHERE id = ?
-RETURNING *;
-
--- name: Delete{{  .TableName | ToCamel | Singular }} :exec
-DELETE FROM {{ .TableName | Quote }}
-WHERE id = ?;
-`
-
 func MySQLTemplateCrudSql() (*template.Template, error) {
 	const mysqlCrudTemplate = `
 -- name: Get{{ .TableName | ToCamel | Singular }} :one
 SELECT * FROM {{ .TableName | Quote }}
-WHERE id = ? LIMIT 1;
+WHERE {{ .PkColumnName }} = ? LIMIT 1;
 
 -- name: Get{{ .TableName | ToCamel | Plural }} :many
 SELECT * FROM {{ .TableName | Quote }};
@@ -58,7 +22,7 @@ SELECT count(*) FROM {{ .TableName | Quote }};
 -- name: Create{{  .TableName | ToCamel | Singular }} :execresult
 INSERT INTO {{ .TableName | Quote }} (
 {{- range $index, $column := .Columns }}
-  {{ $column.ColumnName  | Quote }}{{ if not (Last $index (len $.Columns)) }},{{ end }}
+  {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }}{{ if not (Last $index (len $.Columns)) }},{{ end }}{{ end }}
 {{- end }}
 ) VALUES (
 {{- range $index, $column := .Columns }}
@@ -69,13 +33,13 @@ INSERT INTO {{ .TableName | Quote }} (
 -- name: Update{{  .TableName | ToCamel | Singular }} :exec
 UPDATE {{ .TableName | Quote }}
 SET {{ range $index, $column := .Columns }}
-    {{ $column.ColumnName  | Quote }} = CASE WHEN sqlc.arg({{ $column.ColumnName }}) IS NOT NULL THEN sqlc.arg({{ $column.ColumnName }}) ELSE {{ $column.ColumnName  | Quote }} END,   {{ if not (Last $index (len $.Columns)) }},{{ end }}
+  {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }} = CASE WHEN sqlc.arg({{ $column.ColumnName }}) IS NOT NULL THEN sqlc.arg({{ $column.ColumnName }}) ELSE {{ $column.ColumnName  | Quote }} END,   {{ if not (Last $index (len $.Columns)) }},{{ end }}{{ end }}
 {{- end }}
-WHERE id = ?;
+WHERE {{ .PkColumnName }} = ?;
 
 -- name: Delete{{  .TableName | ToCamel | Singular }} :exec
 DELETE FROM {{ .TableName | Quote }}
-WHERE id = ?;
+WHERE {{ .PkColumnName }} = ?;
 `
 
 	tmpl := template.Must(template.New("mysqlCrudTemplate").Funcs(util.TemplateFuncMap()).Parse(mysqlCrudTemplate))
