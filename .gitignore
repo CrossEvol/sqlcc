@@ -23,6 +23,7 @@ go.work
 **/gen
 **/table_meta
 **/dev.sqlcc.toml
+test/**/sqlcc.toml
 
 .env
 *.env
