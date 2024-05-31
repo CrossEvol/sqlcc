@@ -21,19 +21,19 @@ SELECT count(*) FROM {{ .TableName | Quote }};
 
 -- name: Create{{  .TableName | ToCamel | Singular }} :execresult
 INSERT INTO {{ .TableName | Quote }} (
-{{- range $index, $column := .Columns }}
-  {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }}{{ if not (Last $index (len $.Columns)) }},{{ end }}{{end}}
+{{ range $index, $column := .Columns }}
+  {{- if IsNotID $column }}{{ $column.ColumnName  | Quote }}{{ if not (Last $index (len $.Columns)) }},{{ end }}{{end}}
 {{- end }}
 ) VALUES (
-{{- range $index, $column := .Columns }}
-  ? {{ if not (Last $index (len $.Columns)) }},{{ end }}
+{{ range $index, $column := .Columns }}
+  {{- if IsNotID $column }}? {{ if not (Last $index (len $.Columns)) }},{{ end }}{{ end }}
 {{- end }}
 );
 
 -- name: Update{{  .TableName | ToCamel | Singular }} :exec
 UPDATE {{ .TableName | Quote }}
 SET {{ range $index, $column := .Columns }}
-  {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }} = CASE WHEN @{{ $column.ColumnName }} IS NOT NULL THEN @{{ $column.ColumnName }} ELSE {{ $column.ColumnName  | Quote }} END,   {{ if not (Last $index (len $.Columns)) }},{{ end }}{{end}}
+  {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }} = CASE WHEN @{{ $column.ColumnName }} IS NOT NULL THEN @{{ $column.ColumnName }} ELSE {{ $column.ColumnName  | Quote }} END{{ if not (Last $index (len $.Columns)) }},{{ end }}{{end}}
 {{- end }}
 WHERE {{ .PkColumnName }} = ?;
 
