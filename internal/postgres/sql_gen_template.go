@@ -16,6 +16,9 @@ WHERE {{ .PkColumnName }} = $1 LIMIT 1;
 -- name: Get{{ .TableName | ToCamel | Plural }} :many
 SELECT * FROM {{ .TableName | Quote }};
 
+-- name: Get{{ .TableName | ToCamel | Plural }}By{{ .PkColumnName | ToCamel }}s :many
+SELECT * FROM {{ .TableName | Quote }} WHERE {{ .PkColumnName }} IN ANY($1::int[]);
+
 -- name: Count{{ .TableName | ToCamel | Plural }} :one
 SELECT count(*) FROM {{ .TableName | Quote }};
 
