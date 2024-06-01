@@ -33,7 +33,7 @@ INSERT INTO {{ .TableName | Quote }} (
 {{- end }}
 );
 
--- name: Update{{  .TableName | ToCamel | Singular }} :exec
+-- name: Update{{  .TableName | ToCamel | Singular }} :execresult
 UPDATE {{ .TableName | Quote }}
 SET {{ range $index, $column := .Columns }}
   {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }} = CASE WHEN sqlc.arg('{{ $column.ColumnName }}') IS NOT NULL THEN sqlc.arg('{{ $column.ColumnName }}') ELSE {{ $column.ColumnName  | Quote }} END{{ if not (Last $index (len $.Columns)) }},{{ end }}{{ end }}
