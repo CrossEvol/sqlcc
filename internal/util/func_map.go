@@ -2,8 +2,10 @@ package util
 
 import (
 	"fmt"
+	"github.com/crossevol/sqlcc/internal/common"
 	"github.com/iancoleman/strcase"
 	"github.com/jinzhu/inflection"
+	"strings"
 	"text/template"
 )
 
@@ -19,6 +21,17 @@ func LastFunc(index, length int) bool {
 	return index == length-1
 }
 
+var CreateList = []string{"Create", "create", "CREATE"}
+
+func IsNotCreate(columnPair common.ColumnPair) bool {
+	for _, s := range CreateList {
+		if strings.Contains(columnPair.ColumnName, s) {
+			return false
+		}
+	}
+	return true
+}
+
 func TemplateFuncMap() template.FuncMap {
 	funcMap := template.FuncMap{
 		"ToSnake":          strcase.ToSnake,
@@ -32,6 +45,7 @@ func TemplateFuncMap() template.FuncMap {
 		"Last":             LastFunc,
 		"IsID":             IsID,
 		"IsNotID":          IsNotID,
+		"IsNotCreate":      IsNotCreate,
 	}
 	return funcMap
 }

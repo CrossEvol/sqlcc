@@ -37,7 +37,7 @@ RETURNING *;
 -- name: Update{{  .TableName | ToCamel | Singular }} :one
 UPDATE {{ .TableName | Quote }}
 SET {{ range $index, $column := .Columns }}
-  {{ if IsNotID $column }}{{ $column.ColumnName  | Quote }} = CASE WHEN @{{ $column.ColumnName }} IS NOT NULL THEN @{{ $column.ColumnName }} ELSE {{ $column.ColumnName  | Quote }} END{{ if not (Last $index (len $.Columns)) }},{{ end }}{{ end }}
+  {{ if and  (IsNotID $column) (IsNotCreate $column) }}{{ $column.ColumnName  | Quote }} = CASE WHEN @{{ $column.ColumnName }} IS NOT NULL THEN @{{ $column.ColumnName }} ELSE {{ $column.ColumnName  | Quote }} END{{ if not (Last $index (len $.Columns)) }},{{ end }}{{ end }}
 {{- end }}
 WHERE {{ .PkColumnName }} = ${{ Add (len .Columns) 1 }}
 RETURNING *;
